@@ -9,6 +9,3 @@ def main_menu_keyboard():
             [InlineKeyboardButton(text='Помощь', callback_data='help')],
         ]
     )
-    
-def main_menu_button():
-    return InlineKeyboardButton(text='Главное меню', callback_data='main_menu')
