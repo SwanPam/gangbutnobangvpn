@@ -1,3 +1,3 @@
-from .helpers import format_username
+from .helpers import generate_referral_code
 
-__all__ = ["format_username"]
+__all__ = ["generate_referral_code"]

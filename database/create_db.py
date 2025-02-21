@@ -22,7 +22,6 @@ class User(Base):
     __tablename__ = "users"
     user_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), nullable=False)
-    email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     main_balance: Mapped[float] = mapped_column(Numeric(10,2), default=0.00)
     referral_balance: Mapped[float] = mapped_column(Numeric(10,2), default=0.00)
     referral_code: Mapped[str] = mapped_column(String(20), unique=True)
@@ -39,6 +38,9 @@ class VPNKey(Base):
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.now())
     deleted_at: Mapped[datetime] = mapped_column(TIMESTAMP)
     
+    # Add back reference here
+    devices = relationship("Device", back_populates="vpn_key")
+
 class Device(Base):
     __tablename__ = "devices"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -47,15 +49,12 @@ class Device(Base):
     key_id: Mapped[int] = mapped_column(ForeignKey("vpn_keys.key_id", ondelete="SET NULL"))
     status: Mapped[str] = mapped_column(String(20), default='active')
     added_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.now)
-    instruction_id: Mapped[int] = mapped_column(Integer, 
-                                                ForeignKey("device_instructions.instruction_id",
-                                                           ondelete="CASCADE"))
+    instruction_id: Mapped[int] = mapped_column(Integer, ForeignKey("device_instructions.instruction_id", ondelete="CASCADE"))
     
     user = relationship("User", back_populates="devices")
-    instruction = relationship("DeviceInstruction", back_populates="devices")
+    instruction = relationship("DeviceInstruction", back_populates="devices")  # Это должна быть двусторонняя связь
     vpn_key = relationship("VPNKey", back_populates="devices", primaryjoin="VPNKey.key_id == Device.key_id")
-
-
+    
 class Notification(Base):
     __tablename__ = "notifications"
     notification_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -70,6 +69,9 @@ class DeviceInstruction(Base):
     device_type: Mapped[str] = mapped_column(String(100))
     instruction_text: Mapped[str] = mapped_column(Text, nullable=False)
     download_link: Mapped[str] = mapped_column(Text)
+    
+    # Добавляем связь с Device
+    devices = relationship("Device", back_populates="instruction")
 
 class Referral(Base):
     __tablename__ = "referrals"
@@ -105,9 +107,9 @@ class Payment(Base):
 # Функция для создания таблиц
 async def init_db():
     async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-
-# Запуск создания таблиц
+        
 if __name__ == "__main__":
     asyncio.run(init_db())
     
