@@ -1,4 +1,5 @@
 import asyncio
+from collections import namedtuple
 import logging
 from sqlalchemy import delete, select
 from database.create_db import *
@@ -36,4 +37,24 @@ async def remove_device(device_id: int) -> bool:
         except Exception as e:
             print(f"Ошибка при удалении устройства: {e}")
             return False
-        
+
+DeviceInfo = namedtuple('DeviceInfo', ['name', 'status', 'added_at', 'key'])
+
+async def get_device_info(device_id: int) -> DeviceInfo:
+    async with async_session() as session:
+        try:
+            async with session.begin():
+                result = await session.execute(
+                    select(Device.name, Device.status, Device.added_at, VPNKey.key)
+                    .join(VPNKey, VPNKey.key_id == Device.key_id)
+                    .where(Device.id == device_id)
+                )
+                data = result.fetchone()
+                print(f'Данные устройства: {data}')
+                if data:
+                    return DeviceInfo(*data)
+                return None
+        except Exception as e:
+            print(f"Ошибка при получении информации об устройстве: {e}")
+            return None
+

@@ -6,7 +6,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 from database.device_rq import *
-from keyboards.devices_kb import my_devices_menu_keyboard
+from keyboards.devices_kb import device_keyboard, my_devices_menu_keyboard
 
 devices_router = Router()
 
@@ -78,3 +78,17 @@ async def remove(update: CallbackQuery, state: FSMContext):
     await update.message.answer(text)
     await update.answer('')
     await state.clear()
+    
+@devices_router.callback_query(F.data.func(lambda data: re.match(r"^device_.*_select$", data)))
+async def seelct(update: CallbackQuery):
+    device_id = int(update.data.split('_')[1])
+    keyboard = device_keyboard(device_id)
+    device_info = await get_device_info(device_id)
+    text = f'''Имя устройства: {device_info.name}
+Статус устройства: {'активно' if device_info.status == 'active' else 'не активно'}
+Устройство добавлено: {device_info.added_at}
+Ключ устройства: {device_info.key}'''
+    await update.message.answer(text=text, reply_markup=keyboard)
+    await update.answer('')
+    
+    # Device.name, Device.status, Device.added_at, VPNKey.key

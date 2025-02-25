@@ -23,3 +23,11 @@ def my_devices_menu_keyboard(devices: list = [], type: str = 'select'):
         keyboard.row(InlineKeyboardButton(text="Главное меню", callback_data="main_menu"))
     
     return keyboard.as_markup()
+
+def device_keyboard(device_id: int):
+    keyboard = InlineKeyboardBuilder()
+    keyboard.row(InlineKeyboardButton(text='Изменить имя', callback_data=f'rename_device_{device_id}'))
+    keyboard.row(InlineKeyboardButton(text='Включить/отключить', callback_data=f'Enable/Disable'))
+    keyboard.row(InlineKeyboardButton(text='Мои устройства', callback_data=f'my_devices'))
+    keyboard.row(InlineKeyboardButton(text='Главное меню', callback_data=f'start'))
+    return keyboard.as_markup()
