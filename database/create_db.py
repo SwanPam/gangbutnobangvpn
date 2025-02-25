@@ -3,7 +3,7 @@ import asyncpg
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncAttrs, AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, Numeric, String, Boolean, Date, Integer, TIMESTAMP, Text
+from sqlalchemy import CheckConstraint, ForeignKey, Numeric, String, Boolean, Date, Integer, TIMESTAMP, Text
 
 DB_USER = "postgres"
 DB_PASSWORD = "12345"
@@ -85,10 +85,11 @@ class PaymentMethod(Base):
     __tablename__ = "payment_methods"
     payment_method_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"))
-    method_type: Mapped[str] = mapped_column(String(50))
+    method_type: Mapped[str] = mapped_column(
+        String(50), CheckConstraint("method_type IN ('card', 'wallet')", name="check_method_type")
+    )
     title: Mapped[str] = mapped_column(String(100))
-    first_6_digits: Mapped[str] = mapped_column(String(6))
-    last_4_digits: Mapped[str] = mapped_column(String(4))
+    requisites: Mapped[str] = mapped_column(String(16))
     expiry_date: Mapped[datetime] = mapped_column(Date)
 
 class Payment(Base):
