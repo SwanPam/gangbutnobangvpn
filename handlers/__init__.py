@@ -1,6 +1,6 @@
-from .start import start_router
-from .other_handlers import other_router
-from .devices import devices_router
+from .start_hd import start_router
+from .other_hd import other_router
+from .devices_hd import devices_router
 
 def register_handlers(dp):
     dp.include_router(start_router)

@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
 
-from keyboards.main_menu import main_menu_keyboard
+from keyboards.main_menu_kb import main_menu_keyboard
 from database import user_req
 import utils
 start_router = Router()

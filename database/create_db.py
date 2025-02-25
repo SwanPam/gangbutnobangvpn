@@ -20,7 +20,7 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 class User(Base):
     __tablename__ = "users"
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     username: Mapped[str] = mapped_column(String(50), nullable=False)
     main_balance: Mapped[float] = mapped_column(Numeric(10,2), default=0.00)
     referral_balance: Mapped[float] = mapped_column(Numeric(10,2), default=0.00)
@@ -36,7 +36,7 @@ class VPNKey(Base):
     key: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(20), default='active')
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.now())
-    deleted_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+    deleted_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=True)
     
     # Add back reference here
     devices = relationship("Device", back_populates="vpn_key")
@@ -45,14 +45,12 @@ class Device(Base):
     __tablename__ = "devices"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id", ondelete="CASCADE"))
-    device_name: Mapped[str] = mapped_column(String(100))
+    name: Mapped[str] = mapped_column(String(100))
     key_id: Mapped[int] = mapped_column(ForeignKey("vpn_keys.key_id", ondelete="SET NULL"))
     status: Mapped[str] = mapped_column(String(20), default='active')
     added_at: Mapped[datetime] = mapped_column(TIMESTAMP, default=datetime.now)
-    instruction_id: Mapped[int] = mapped_column(Integer, ForeignKey("device_instructions.instruction_id", ondelete="CASCADE"))
     
     user = relationship("User", back_populates="devices")
-    instruction = relationship("DeviceInstruction", back_populates="devices")  # Это должна быть двусторонняя связь
     vpn_key = relationship("VPNKey", back_populates="devices", primaryjoin="VPNKey.key_id == Device.key_id")
     
 class Notification(Base):
@@ -63,15 +61,15 @@ class Notification(Base):
     sent_to_all: Mapped[bool] = mapped_column(Boolean, default=False)
     scheduled_at: Mapped[datetime] = mapped_column(TIMESTAMP)
 
-class DeviceInstruction(Base):
-    __tablename__ = "device_instructions"
-    instruction_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    device_type: Mapped[str] = mapped_column(String(100))
-    instruction_text: Mapped[str] = mapped_column(Text, nullable=False)
-    download_link: Mapped[str] = mapped_column(Text)
+# class DeviceInstruction(Base):
+#     __tablename__ = "device_instructions"
+#     instruction_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+#     device_type: Mapped[str] = mapped_column(String(100))
+#     instruction_text: Mapped[str] = mapped_column(Text, nullable=False)
+#     download_link: Mapped[str] = mapped_column(Text)
     
-    # Добавляем связь с Device
-    devices = relationship("Device", back_populates="instruction")
+#     # Добавляем связь с Device
+#     devices = relationship("Device", back_populates="instruction")
 
 class Referral(Base):
     __tablename__ = "referrals"
